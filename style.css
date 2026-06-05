@@ -1,0 +1,695 @@
+/* ============================================================
+   DESIGN TOKENS
+   All colors, spacing, and type decisions live here.
+   Change a variable, the whole app updates.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Colors */
+  --color-bg:           #0f1117;
+  --color-surface:      #1a1d27;
+  --color-surface-alt:  #21253a;
+  --color-border:       #2a2f45;
+  --color-border-light: #343a52;
+  --color-text:         #e8eaf0;
+  --color-text-muted:   #6b7299;
+  --color-text-faint:   #3d4360;
+  --color-accent:       #4f86f7;
+  --color-accent-dim:   rgba(79, 134, 247, 0.15);
+  --color-today-bg:     rgba(79, 134, 247, 0.12);
+  --color-today-border: #4f86f7;
+  --color-danger:       #f7664f;
+  --color-danger-dim:   rgba(247, 102, 79, 0.15);
+
+  /* Typography */
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  /* Spacing */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Header height - used to offset grid area */
+  --header-height: 64px;
+
+  /* Transitions */
+  --transition: 150ms ease;
+}
+
+/* ============================================================
+   RESET + BASE
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input {
+  font-family: inherit;
+}
+
+/* ============================================================
+   APP WRAPPER
+   ============================================================ */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  gap: var(--space-md);
+}
+
+/* Left: prev/today/next */
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* Center: period label */
+.header__label {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  flex: 1;
+  text-align: center;
+}
+
+/* Right: view toggle + add button */
+.header__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+/* Icon button (arrows, close) */
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--color-text-muted);
+  transition: background var(--transition), color var(--transition);
+  line-height: 1;
+}
+.btn-icon:hover {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+/* "Today" text button */
+.btn-text {
+  height: 32px;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: background var(--transition), color var(--transition);
+}
+.btn-text:hover {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+/* View toggle pill */
+.view-toggle {
+  display: flex;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+.view-toggle__btn {
+  height: 28px;
+  padding: 0 var(--space-md);
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: background var(--transition), color var(--transition);
+}
+.view-toggle__btn.active {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+.view-toggle__btn:hover:not(.active) {
+  color: var(--color-text);
+}
+
+/* Add event button */
+.btn-add {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: opacity var(--transition), transform var(--transition);
+  box-shadow: 0 2px 12px rgba(79, 134, 247, 0.35);
+}
+.btn-add:hover {
+  opacity: 0.88;
+  transform: scale(1.06);
+}
+
+/* Primary action button */
+.btn-primary {
+  height: 36px;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity var(--transition);
+}
+.btn-primary:hover { opacity: 0.88; }
+
+/* Secondary/cancel button */
+.btn-secondary {
+  height: 36px;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background var(--transition), color var(--transition);
+}
+.btn-secondary:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+/* Danger/delete button */
+.btn-danger {
+  height: 36px;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-dim);
+  color: var(--color-danger);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background var(--transition);
+}
+.btn-danger:hover { background: rgba(247, 102, 79, 0.25); }
+
+/* ============================================================
+   CALENDAR CONTAINER
+   ============================================================ */
+.calendar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
+  gap: 0;
+}
+
+/* Day of week header row */
+.dow-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 0;
+}
+.dow-labels span {
+  padding: var(--space-sm) var(--space-xs);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* The grid itself */
+.calendar-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  /* Rows are set dynamically per view: 6 rows for month, 1 for week */
+  grid-auto-rows: 1fr;
+  border-left: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+/* Placeholder visible only in Phase 1 */
+.grid-placeholder {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-faint);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  padding: var(--space-xl);
+}
+
+/* ============================================================
+   GRID CELLS
+   (Structure defined now; JS adds them in Phase 2)
+   ============================================================ */
+.day-cell {
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-xs) var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+  transition: background var(--transition);
+  overflow: hidden;
+  min-height: 0;
+}
+.day-cell:hover {
+  background: var(--color-surface-alt);
+}
+
+/* Day number label inside each cell */
+.day-cell__number {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  align-self: flex-start;
+  flex-shrink: 0;
+  transition: background var(--transition), color var(--transition);
+}
+
+/* Today's date highlight */
+.day-cell.today .day-cell__number {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* Days outside the current month (greyed out) */
+.day-cell.outside-month .day-cell__number {
+  color: var(--color-text-faint);
+}
+.day-cell.outside-month {
+  background: rgba(255,255,255,0.01);
+}
+
+/* Event chip shown inside a cell */
+.event-chip {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity var(--transition);
+  flex-shrink: 0;
+}
+.event-chip:hover { opacity: 0.85; }
+
+/* Week view: taller chips with time shown */
+.event-chip--week {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+.event-chip__time {
+  display: block;
+  font-size: 10px;
+  opacity: 0.8;
+  font-family: var(--font-mono);
+  margin-top: 1px;
+}
+
+/* ============================================================
+   WEEK VIEW OVERRIDES
+   When .calendar-grid has .week-view, dow labels + grid show 1 row
+   ============================================================ */
+.calendar-container.week-view .dow-labels {
+  /* Same 7-col grid, no change needed */
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  transform: translateY(8px);
+  transition: transform 200ms ease;
+}
+.modal-overlay.open .modal {
+  transform: translateY(0);
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-xs);
+}
+.modal__footer-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-left: auto;
+}
+
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"] {
+  height: 40px;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--transition);
+  width: 100%;
+}
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus {
+  border-color: var(--color-accent);
+}
+
+/* Browser date/time picker icon color */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
+}
+
+/* Color swatches */
+.color-palette {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  padding: var(--space-xs) 0;
+}
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition);
+  position: relative;
+}
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+.color-swatch.selected::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  opacity: 0.7;
+}
+
+/* ============================================================
+   PHASE 3: DOW LABEL TODAY HIGHLIGHT (used in week view)
+   ============================================================ */
+.dow-labels span.dow-today {
+  color: var(--color-accent);
+}
+.dow-labels span.dow-today strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: var(--color-accent);
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+/* ============================================================
+   PHASE 4: WEEK VIEW
+   ============================================================ */
+
+/* When week-view is active, the single row fills all available height */
+.calendar-container.week-view .calendar-grid {
+  grid-auto-rows: 1fr;
+}
+
+/* Week cells get a slightly different padding since they're taller */
+.day-cell--week {
+  padding: var(--space-sm);
+  gap: var(--space-xs);
+}
+
+/* Today highlight on week cell: left border accent instead of number circle */
+.day-cell--week.today {
+  background: var(--color-today-bg);
+  border-top: 2px solid var(--color-today-border);
+}
+
+/* Hide the day number in week cells since the DOW label row carries the date */
+.day-cell__number--hidden {
+  display: none;
+}
+
+/* ============================================================
+   PHASE 5: MODAL INPUT VALIDATION
+   ============================================================ */
+
+/* Shake animation for empty required fields */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+input.input-error {
+  border-color: var(--color-danger) !important;
+  animation: shake 0.4s ease;
+}
+
+/* ============================================================
+   BONUS 1: LIGHT THEME
+   Overrides every CSS variable when body.light-theme is active.
+   No other CSS changes needed since everything uses variables.
+   ============================================================ */
+body.light-theme {
+  --color-bg:           #f0f2f8;
+  --color-surface:      #ffffff;
+  --color-surface-alt:  #e8ebf5;
+  --color-border:       #d0d5e8;
+  --color-border-light: #bcc3dc;
+  --color-text:         #1a1d2e;
+  --color-text-muted:   #5a6080;
+  --color-text-faint:   #b0b8d0;
+  --color-accent:       #3a6fd8;
+  --color-accent-dim:   rgba(58, 111, 216, 0.12);
+  --color-today-bg:     rgba(58, 111, 216, 0.08);
+  --color-today-border: #3a6fd8;
+  --color-danger:       #d94f38;
+  --color-danger-dim:   rgba(217, 79, 56, 0.12);
+}
+
+/* Theme button: shows sun in dark mode, moon in light mode */
+.btn-theme {
+  font-size: 18px;
+  transition: transform 300ms ease, color var(--transition);
+}
+.btn-theme:hover {
+  transform: rotate(20deg) scale(1.1);
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+/* Smooth theme transition across the whole page */
+body {
+  transition:
+    background-color 250ms ease,
+    color 250ms ease;
+}
+.header,
+.modal,
+.day-cell,
+.modal-overlay {
+  transition:
+    background-color 250ms ease,
+    border-color 250ms ease;
+}
+
+/* ============================================================
+   BONUS 2: DRAG AND DROP
+   ============================================================ */
+
+/* Chip being dragged: fade it so the cursor feels "picked up" */
+.event-chip.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+/* Cell that a chip is hovering over during drag */
+.day-cell.drag-over {
+  background: var(--color-accent-dim);
+  outline: 2px dashed var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* Make chips show a grab cursor when hovering */
+.event-chip {
+  cursor: grab;
+}
+.event-chip:active {
+  cursor: grabbing;
+}
+
+/* ============================================================
+   BONUS 3: REMINDER SELECT
+   ============================================================ */
+select {
+  height: 40px;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7299' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+select:focus {
+  border-color: var(--color-accent);
+}

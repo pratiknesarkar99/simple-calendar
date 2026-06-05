@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendar</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- =====================
+       APP WRAPPER
+       ===================== -->
+  <div class="app">
+
+    <!-- =====================
+         HEADER
+         Contains: navigation arrows, current period label, view toggle, add button
+         ===================== -->
+    <header class="header">
+
+      <div class="header__nav">
+        <button class="btn-icon" id="btn-prev" aria-label="Previous">&#8249;</button>
+        <button class="btn-text" id="btn-today">Today</button>
+        <button class="btn-icon" id="btn-next" aria-label="Next">&#8250;</button>
+      </div>
+
+      <h1 class="header__label" id="current-period-label">June 2026</h1>
+
+      <div class="header__controls">
+        <div class="view-toggle">
+          <button class="view-toggle__btn active" data-view="month">Month</button>
+          <button class="view-toggle__btn" data-view="week">Week</button>
+        </div>
+        <button class="btn-icon btn-theme" id="btn-theme" aria-label="Toggle theme" title="Toggle light/dark theme">&#9788;</button>
+        <button class="btn-add" id="btn-add-event" aria-label="Add event">+</button>
+      </div>
+
+    </header>
+
+    <!-- =====================
+         CALENDAR GRID AREA
+         The day-of-week labels row + the actual grid cells
+         are both rendered here. JS will populate this in Phase 2.
+         ===================== -->
+    <main class="calendar-container" id="calendar-container">
+
+      <!-- Day of week labels (static, always visible) -->
+      <div class="dow-labels" id="dow-labels">
+        <span>Sun</span>
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+      </div>
+
+      <!-- Grid cells go here, injected by JS -->
+      <div class="calendar-grid" id="calendar-grid">
+        <!-- Placeholder so the layout is visible in Phase 1 -->
+        <div class="grid-placeholder">Calendar grid renders here in Phase 2</div>
+      </div>
+
+    </main>
+
+  </div><!-- /.app -->
+
+
+  <!-- =====================
+       EVENT MODAL
+       Hidden by default. Opened when user clicks "+" or a day cell.
+       Contains the form to add/edit an event.
+       ===================== -->
+  <div class="modal-overlay" id="modal-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-labelledby="modal-title">
+
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-title">New Event</h2>
+        <button class="btn-icon modal__close" id="btn-modal-close" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal__body">
+
+        <div class="form-group">
+          <label for="input-title">Title</label>
+          <input type="text" id="input-title" placeholder="Event title" autocomplete="off" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-date">Date</label>
+            <input type="date" id="input-date" />
+          </div>
+          <div class="form-group">
+            <label for="input-time">Time</label>
+            <input type="time" id="input-time" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Color</label>
+          <div class="color-palette" id="color-palette">
+            <!-- Color swatches injected by JS in Phase 5 -->
+            <span class="color-swatch selected" style="background:#4f86f7;" data-color="#4f86f7"></span>
+            <span class="color-swatch" style="background:#f7664f;" data-color="#f7664f"></span>
+            <span class="color-swatch" style="background:#4fc97a;" data-color="#4fc97a"></span>
+            <span class="color-swatch" style="background:#f7c94f;" data-color="#f7c94f"></span>
+            <span class="color-swatch" style="background:#b44ff7;" data-color="#b44ff7"></span>
+            <span class="color-swatch" style="background:#4ff0f7;" data-color="#4ff0f7"></span>
+          </div>
+        </div>
+
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-reminder">Reminder</label>
+            <select id="input-reminder">
+              <option value="">No reminder</option>
+              <option value="5">5 minutes before</option>
+              <option value="15">15 minutes before</option>
+              <option value="30">30 minutes before</option>
+              <option value="60">60 minutes before</option>
+            </select>
+          </div>
+        </div>
+
+      </div><!-- /.modal__body -->
+
+      <div class="modal__footer">
+        <!-- Delete button only visible when editing an existing event -->
+        <button class="btn-danger" id="btn-delete-event" style="display:none;">Delete</button>
+        <div class="modal__footer-actions">
+          <button class="btn-secondary" id="btn-cancel">Cancel</button>
+          <button class="btn-primary" id="btn-save-event">Save Event</button>
+        </div>
+      </div>
+
+    </div><!-- /.modal -->
+  </div><!-- /.modal-overlay -->
+
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
