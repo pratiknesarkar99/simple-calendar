@@ -11,6 +11,7 @@
  */
 
 import { state } from './state.js';
+import { getVisibleEvents } from './recurrence.js';
 import {
   getDaysInMonth,
   getFirstDayOfMonth,
@@ -25,9 +26,9 @@ import {
 // ─── DOM References ────────────────────────────────────────────────────────
 const dom = {
   currentPeriodLabel: document.getElementById('current-period-label'),
-  calendarGrid:       document.getElementById('calendar-grid'),
-  dowLabels:          document.getElementById('dow-labels'),
-  calendarContainer:  document.getElementById('calendar-container'),
+  calendarGrid: document.getElementById('calendar-grid'),
+  dowLabels: document.getElementById('dow-labels'),
+  calendarContainer: document.getElementById('calendar-container'),
 };
 
 
@@ -52,12 +53,12 @@ function renderDowLabelsWeek(weekStart) {
 // ─── Month Grid ────────────────────────────────────────────────────────────
 
 function renderMonthGrid() {
-  const year  = state.activeDate.getFullYear();
+  const year = state.activeDate.getFullYear();
   const month = state.activeDate.getMonth();
 
-  const daysInMonth   = getDaysInMonth(year, month);
+  const daysInMonth = getDaysInMonth(year, month);
   const firstDayIndex = getFirstDayOfMonth(year, month);
-  const totalCells    = Math.ceil((firstDayIndex + daysInMonth) / 7) * 7;
+  const totalCells = Math.ceil((firstDayIndex + daysInMonth) / 7) * 7;
   const prevMonthDays = getDaysInMonth(year, month - 1 < 0 ? 11 : month - 1);
 
   dom.currentPeriodLabel.textContent = formatMonthLabel(state.activeDate);
@@ -70,9 +71,9 @@ function renderMonthGrid() {
     let cellDate;
 
     if (i < firstDayIndex) {
-      const prevDay   = prevMonthDays - (firstDayIndex - 1 - i);
+      const prevDay = prevMonthDays - (firstDayIndex - 1 - i);
       const prevMonth = month - 1 < 0 ? 11 : month - 1;
-      const prevYear  = month - 1 < 0 ? year - 1 : year;
+      const prevYear = month - 1 < 0 ? year - 1 : year;
       cellDate = new Date(prevYear, prevMonth, prevDay);
       cell.classList.add('outside-month');
 
@@ -82,7 +83,7 @@ function renderMonthGrid() {
 
     } else {
       const nextMonth = month + 1 > 11 ? 0 : month + 1;
-      const nextYear  = month + 1 > 11 ? year + 1 : year;
+      const nextYear = month + 1 > 11 ? year + 1 : year;
       cellDate = new Date(nextYear, nextMonth, i - firstDayIndex - daysInMonth + 1);
       cell.classList.add('outside-month');
     }
@@ -128,6 +129,71 @@ function renderWeekGrid() {
 }
 
 
+
+// ─── Current Time Indicator ────────────────────────────────────────────────
+// Only shown in week view when the current week is being viewed.
+// Positioned as a percentage of the day elapsed (0% = midnight, 100% = 11:59pm).
+
+let timeIndicatorInterval = null;
+
+/**
+ * Is the currently viewed week the one that contains today?
+ */
+function isCurrentWeekVisible() {
+  const weekStart = getWeekStart(state.activeDate);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  const today = state.today;
+  return today >= weekStart && today <= weekEnd;
+}
+
+/**
+ * Calculate how far through the day we are as a percentage (0-100).
+ * Used to position the indicator line vertically inside the today cell.
+ */
+function getDayProgressPercent() {
+  const now = new Date();
+  const elapsed = now.getHours() * 60 + now.getMinutes();
+  return (elapsed / 1440) * 100;
+}
+
+/**
+ * Inject or update the time indicator line inside today's week cell.
+ * Safe to call repeatedly: removes any existing indicator before redrawing.
+ */
+function renderTimeIndicator() {
+  // Clean up any existing indicator first
+  dom.calendarGrid.querySelectorAll('.time-indicator').forEach(el => el.remove());
+
+  if (state.activeView !== 'week' || !isCurrentWeekVisible()) return;
+
+  const todayString = toDateString(state.today);
+  const todayCell = dom.calendarGrid.querySelector(`[data-date="${todayString}"]`);
+  if (!todayCell) return;
+
+  const pct = getDayProgressPercent();
+  const indicator = document.createElement('div');
+  indicator.classList.add('time-indicator');
+  indicator.style.top = `${pct}%`;
+
+  // The dot on the left edge of the line
+  const dot = document.createElement('div');
+  dot.classList.add('time-indicator__dot');
+  indicator.appendChild(dot);
+
+  todayCell.appendChild(indicator);
+}
+
+/**
+ * Start the 60-second update interval for the time indicator.
+ * Clears any previous interval so this is safe to call on re-render.
+ */
+function startTimeIndicatorInterval() {
+  if (timeIndicatorInterval) clearInterval(timeIndicatorInterval);
+  timeIndicatorInterval = setInterval(renderTimeIndicator, 60_000);
+}
+
+
 // ─── Event Chips ───────────────────────────────────────────────────────────
 
 function buildChip(event, isWeekView) {
@@ -151,6 +217,13 @@ function buildChip(event, isWeekView) {
     }
   } else {
     chip.textContent = event.title;
+    // Small loop icon on month chips to signal recurrence
+    if (event.recurrence || event.isOccurrence) {
+      const recurEl = document.createElement('span');
+      recurEl.classList.add('event-chip__recur');
+      recurEl.textContent = '↻';
+      chip.appendChild(recurEl);
+    }
   }
 
   return chip;
@@ -158,11 +231,27 @@ function buildChip(event, isWeekView) {
 
 function renderEventChips() {
   const isWeekView = state.activeView === 'week';
+  const year = state.activeDate.getFullYear();
+  const month = state.activeDate.getMonth();
 
-  // Sort events by time before rendering so chips appear in order
-  const sorted = [...state.events].sort((a, b) => {
-    return (a.time || '00:00').localeCompare(b.time || '00:00');
-  });
+  // Define the visible date window so getVisibleEvents knows what to expand
+  let windowStart, windowEnd;
+  if (isWeekView) {
+    windowStart = getWeekStart(state.activeDate);
+    windowEnd = new Date(windowStart);
+    windowEnd.setDate(windowEnd.getDate() + 6);
+  } else {
+    windowStart = new Date(year, month, 1);
+    windowEnd = new Date(year, month + 1, 0);
+  }
+
+  // getVisibleEvents returns both one-time events and expanded recurring occurrences
+  const events = getVisibleEvents(windowStart, windowEnd);
+
+  // Sort by time so chips appear in chronological order within each cell
+  const sorted = events.sort((a, b) =>
+    (a.time || '00:00').localeCompare(b.time || '00:00')
+  );
 
   sorted.forEach(event => {
     const cell = dom.calendarGrid.querySelector(`[data-date="${event.date}"]`);
@@ -187,6 +276,8 @@ export function render() {
     renderWeekGrid();
   }
   renderEventChips();
+  renderTimeIndicator();      // No-op in month view or non-current weeks
+  startTimeIndicatorInterval(); // Reset the 60s update cycle on every render
 }
 
 /**

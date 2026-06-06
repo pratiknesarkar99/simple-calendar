@@ -17,6 +17,8 @@ import { bindDragAndDrop } from './dragdrop.js';
 import { initReminders } from './reminders.js';
 import { initTheme } from './theme.js';
 import { getWeekStart } from './utils.js';
+import { bindExportEvent } from './export.js';
+import { getBaseEventId } from './recurrence.js';
 
 
 // ─── Navigation ────────────────────────────────────────────────────────────
@@ -76,7 +78,12 @@ function bindGridClickEvents() {
   grid.addEventListener('click', (e) => {
     const chip = e.target.closest('.event-chip');
     if (chip) {
-      const event = findEventById(chip.dataset.eventId);
+      // chip may carry a composite occurrence ID (baseId_date).
+      // Pass the raw event object from the chip; openModalForEdit
+      // in modal.js resolves it to the base event for editing.
+      const chipId = chip.dataset.eventId;
+      const baseId = getBaseEventId(chipId);
+      const event = findEventById(baseId);
       if (event) openModalForEdit(event);
       return;
     }
@@ -103,6 +110,7 @@ function init() {
   bindGridClickEvents();
   bindAddButtonEvent();
   bindDragAndDrop();
+  bindExportEvent();
   initReminders();
   render();              // First render with all state hydrated
 }

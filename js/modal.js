@@ -10,33 +10,40 @@
 
 import { state } from './state.js';
 import { createEvent, updateEvent, deleteEvent } from './events.js';
+import { getBaseEventId } from './recurrence.js';
 
 // ─── DOM References ────────────────────────────────────────────────────────
 const dom = {
-  modalOverlay:   document.getElementById('modal-overlay'),
-  modalTitle:     document.getElementById('modal-title'),
-  inputTitle:     document.getElementById('input-title'),
-  inputDate:      document.getElementById('input-date'),
-  inputTime:      document.getElementById('input-time'),
-  inputReminder:  document.getElementById('input-reminder'),
-  colorPalette:   document.getElementById('color-palette'),
+  modalOverlay: document.getElementById('modal-overlay'),
+  modalTitle: document.getElementById('modal-title'),
+  inputTitle: document.getElementById('input-title'),
+  inputDate: document.getElementById('input-date'),
+  inputTime: document.getElementById('input-time'),
+  inputReminder: document.getElementById('input-reminder'),
+  colorPalette: document.getElementById('color-palette'),
   btnDeleteEvent: document.getElementById('btn-delete-event'),
-  btnSaveEvent:   document.getElementById('btn-save-event'),
-  btnCancel:      document.getElementById('btn-cancel'),
-  btnModalClose:  document.getElementById('btn-modal-close'),
+  btnSaveEvent: document.getElementById('btn-save-event'),
+  btnCancel: document.getElementById('btn-cancel'),
+  btnModalClose: document.getElementById('btn-modal-close'),
+  inputRecurrence: document.getElementById('input-recurrence'),
+  inputRecurrenceEnd: document.getElementById('input-recurrence-end'),
+  recurrenceEndGroup: document.getElementById('recurrence-end-group'),
 };
 
 
 // ─── Internal Helpers ──────────────────────────────────────────────────────
 
 function resetModal() {
-  dom.modalTitle.textContent       = 'New Event';
-  dom.inputTitle.value             = '';
-  dom.inputDate.value              = '';
-  dom.inputTime.value              = '';
-  dom.inputReminder.value          = '';
+  dom.modalTitle.textContent = 'New Event';
+  dom.inputTitle.value = '';
+  dom.inputDate.value = '';
+  dom.inputTime.value = '';
+  dom.inputReminder.value = '';
+  dom.inputRecurrence.value = '';
+  dom.inputRecurrenceEnd.value = '';
+  dom.recurrenceEndGroup.style.display = 'none';
   dom.btnDeleteEvent.style.display = 'none';
-  state.editingEventId             = null;
+  state.editingEventId = null;
 
   state.selectedColor = '#4f86f7';
   syncColorSwatches();
@@ -56,11 +63,13 @@ function showModal() {
 
 function readFormValues() {
   return {
-    title:    dom.inputTitle.value.trim(),
-    date:     dom.inputDate.value,
-    time:     dom.inputTime.value,
-    color:    state.selectedColor,
+    title: dom.inputTitle.value.trim(),
+    date: dom.inputDate.value,
+    time: dom.inputTime.value,
+    color: state.selectedColor,
     reminder: dom.inputReminder.value,
+    recurrence: dom.inputRecurrence.value || null,
+    recurrenceEnd: dom.inputRecurrenceEnd.value || null,
   };
 }
 
@@ -75,7 +84,7 @@ function handleSave() {
   const values = readFormValues();
 
   if (!values.title) { shakeInput(dom.inputTitle); return; }
-  if (!values.date)  { shakeInput(dom.inputDate);  return; }
+  if (!values.date) { shakeInput(dom.inputDate); return; }
 
   if (state.editingEventId) {
     updateEvent(state.editingEventId, values);
@@ -111,14 +120,30 @@ export function openModalForNew(dateString = '') {
 /** Open in edit mode with all fields pre-filled from the event. */
 export function openModalForEdit(event) {
   resetModal();
-  dom.modalTitle.textContent       = 'Edit Event';
+
+  // If this is a recurring occurrence, resolve to the base event for editing.
+  // Editing always applies to the base record, which updates all occurrences.
+  const baseId = getBaseEventId(event.id);
+  const baseEvent = baseId !== event.id
+    ? (state.events.find(ev => ev.id === baseId) || event)
+    : event;
+
+  dom.modalTitle.textContent = 'Edit Event';
   dom.btnDeleteEvent.style.display = 'block';
-  state.editingEventId             = event.id;
-  dom.inputTitle.value             = event.title;
-  dom.inputDate.value              = event.date;
-  dom.inputTime.value              = event.time || '';
-  dom.inputReminder.value          = event.reminder || '';
-  state.selectedColor              = event.color;
+  state.editingEventId = baseEvent.id;
+  dom.inputTitle.value = baseEvent.title;
+  dom.inputDate.value = baseEvent.date;
+  dom.inputTime.value = baseEvent.time || '';
+  dom.inputReminder.value = baseEvent.reminder || '';
+  state.selectedColor = baseEvent.color;
+
+  // Pre-fill recurrence fields
+  if (baseEvent.recurrence) {
+    dom.inputRecurrence.value = baseEvent.recurrence;
+    dom.recurrenceEndGroup.style.display = 'block';
+    dom.inputRecurrenceEnd.value = baseEvent.recurrenceEnd || '';
+  }
+
   syncColorSwatches();
   showModal();
 }
@@ -138,6 +163,13 @@ export function bindModalEvents() {
     if (e.key === 'Escape' && dom.modalOverlay.classList.contains('open')) {
       closeModal();
     }
+  });
+
+  // Show/hide the end date field based on whether recurrence is selected
+  dom.inputRecurrence.addEventListener('change', () => {
+    const hasRecurrence = !!dom.inputRecurrence.value;
+    dom.recurrenceEndGroup.style.display = hasRecurrence ? 'block' : 'none';
+    if (!hasRecurrence) dom.inputRecurrenceEnd.value = '';
   });
 
   dom.colorPalette.addEventListener('click', (e) => {
