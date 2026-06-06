@@ -15,14 +15,16 @@ import { render } from './renderer.js';
  * Add a new event to state and persist it.
  * The caller (modal.js) is responsible for validation before calling this.
  */
-export function createEvent({ title, date, time, color, reminder }) {
+export function createEvent({ title, date, time, color, reminder, recurrence, recurrenceEnd }) {
   const event = {
-    id:       crypto.randomUUID(),
+    id: crypto.randomUUID(),
     title,
     date,
     time,
     color,
     reminder,
+    recurrence: recurrence || null,
+    recurrenceEnd: recurrenceEnd || null,
   };
   state.events.push(event);
   saveEvents();
@@ -33,7 +35,7 @@ export function createEvent({ title, date, time, color, reminder }) {
  * Update an existing event by ID.
  * Uses spread to preserve the original id and any future fields.
  */
-export function updateEvent(id, { title, date, time, color, reminder }) {
+export function updateEvent(id, { title, date, time, color, reminder, recurrence, recurrenceEnd }) {
   const index = state.events.findIndex(ev => ev.id === id);
   if (index === -1) return;
   state.events[index] = {
@@ -43,6 +45,8 @@ export function updateEvent(id, { title, date, time, color, reminder }) {
     time,
     color,
     reminder,
+    recurrence: recurrence || null,
+    recurrenceEnd: recurrenceEnd || null,
   };
   saveEvents();
   render();
